@@ -1,0 +1,58 @@
+stages:
+  - test
+  - lint
+  - deploy
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+cache:
+  paths:
+    - .cache/pip
+    - venv/
+
+before_script:
+  - python --version
+  - pip install virtualenv
+  - virtualenv venv
+  - source venv/bin/activate
+  - pip install -r requirements.txt
+
+test:
+  stage: test
+  script:
+    - python -m pytest tests/ -v --tb=short
+    - python -m pytest tests/ --cov=src --cov-report=xml
+  artifacts:
+    when: always
+    paths:
+      - coverage.xml
+    reports:
+      cobertura: coverage.xml
+  only:
+    - main
+    - develop
+    - merge_requests
+
+lint:
+  stage: lint
+  script:
+    - flake8 src/ --count --select=E9,F63,F7,F82 --show-source --statistics
+    - flake8 src/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+  only:
+    - main
+    - develop
+    - merge_requests
+
+pages:
+  stage: deploy
+  script:
+    - mkdir public
+    - echo "# CI/CD Pipeline Report" > public/index.html
+    - echo "Build number: $CI_PIPELINE_IID" >> public/index.html
+    - echo "Status: $CI_JOB_STATUS" >> public/index.html
+  artifacts:
+    paths:
+      - public
+  only:
+    - main

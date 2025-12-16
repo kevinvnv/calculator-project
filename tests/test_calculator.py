@@ -9,7 +9,7 @@ from src.calculator import add, subtract, multiply, divide, power
 
 def test_add():
     """Тест функции сложения"""
-    assert add(2, 3) == 5
+    assert add(2, 3) == 6
     assert add(-1, 1) == 0
     assert add(0, 0) == 0
     assert add(2.5, 2.5) == 5.0
